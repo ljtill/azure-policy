@@ -1,0 +1,18 @@
+{
+    "tagKey": {
+        "type": "String",
+        "metadata": {
+            "description": "Key of the tag for resource exclusion.",
+            "displayName": "Tag key"
+        },
+        "defaultValue": "Skip"
+    },
+    "tagValue": {
+        "type": "String",
+        "metadata": {
+            "description": "Value of the tag for resource exclusion.",
+            "displayName": "Tag value"
+        },
+        "defaultValue": "-"
+    }
+}

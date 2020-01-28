@@ -1,0 +1,43 @@
+{
+    "if": {
+        "anyOf": [
+            {
+                "allOf": [
+                    {
+                        "field": "type",
+                        "equals": "Microsoft.Compute/virtualMachines"
+                    },
+                    {
+                        "field": "Microsoft.Compute/virtualMachines/storageProfile.osDisk.managedDisk.storageAccountType",
+                        "notEquals": "Standard_LRS"
+                    }
+                ]
+            },
+            {
+                "allOf": [
+                    {
+                        "field": "type",
+                        "equals": "Microsoft.Compute/virtualMachines"
+                    },
+                    {
+                        "not": {
+                            "field": "Microsoft.Compute/virtualMachines/storageProfile.dataDisks[*]",
+                            "equals": "--"
+                        }
+                    },
+                    {
+                        "not": {
+                            "field": "Microsoft.Compute/virtualMachines/storageProfile.dataDisks[*].managedDisk.storageAccountType",
+                            "in": [
+                                "Standard_LRS"
+                            ]
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "then": {
+        "effect": "audit"
+    }
+}

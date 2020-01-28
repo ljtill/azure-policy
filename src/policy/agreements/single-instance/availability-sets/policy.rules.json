@@ -1,0 +1,47 @@
+{
+    "if": {
+        "allOf": [
+            {
+                "allOf": [
+                    {
+                        "field": "type",
+                        "equals": "Microsoft.Compute/availabilitySets"
+                    },
+                    {
+                        "not": {
+                            "field": "[concat('tags[', parameters('tagKey'), ']')]",
+                            "equals": "[parameters('tagValue')]"
+                        }
+                    }
+                ]
+            },
+            {
+                "anyOf": [
+                    {
+                        "not": {
+                            "count": {
+                                "field": "Microsoft.Compute/availabilitySets/virtualMachines[*]"
+                            },
+                            "greaterOrEquals": 2
+                        }
+                    },
+                    {
+                        "not": {
+                            "field": "Microsoft.Compute/availabilitySets/sku.name",
+                            "equals": "Aligned"
+                        }
+                    },
+                    {
+                        "not": {
+                            "field": "Microsoft.Compute/availabilitySets/platformFaultDomainCount",
+                            "greaterOrEquals": 2
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "then": {
+        "effect": "audit"
+    }
+}

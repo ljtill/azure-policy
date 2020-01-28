@@ -1,0 +1,84 @@
+{
+    "properties": {
+        "mode": "all",
+        "parameters": {
+            "tagKey": {
+                "type": "String",
+                "metadata": {
+                    "description": "Key of the tag for resource exclusion.",
+                    "displayName": "Tag key"
+                },
+                "defaultValue": "Skip"
+            },
+            "tagValue": {
+                "type": "String",
+                "metadata": {
+                    "description": "Value of the tag for resource exclusion.",
+                    "displayName": "Tag value"
+                },
+                "defaultValue": "-"
+            }
+        },
+        "displayName": "Audit for Single Instance - Virtual Machine Scale Sets",
+        "description": "Provides the ability to audit Virtual Machine Scale Sets for single instances.",
+        "policyRule": {
+            "if": {
+                "allOf": [
+                    {
+                        "allOf": [
+                            {
+                                "field": "type",
+                                "equals": "Microsoft.Compute/virtualMachineScaleSets"
+                            },
+                            {
+                                "not": {
+                                    "field": "[concat('tags[', parameters('tagKey'), ']')]",
+                                    "equals": "[parameters('tagValue')]"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "anyOf": [
+                            {
+                                "allOf": [
+                                    {
+                                        "count": {
+                                            "field": "Microsoft.Compute/virtualMachineScaleSets/zones[*]"
+                                        },
+                                        "less": 0
+                                    }
+                                ]
+                            },
+                            {
+                                "field": "Microsoft.Compute/virtualMachineScaleSets/virtualMachineProfile.storageProfile.osDisk.managedDisk.storageAccountType",
+                                "notEquals": "Premium_LRS"
+                            },
+                            {
+                                "allOf": [
+                                    {
+                                        "not": {
+                                            "field": "Microsoft.Compute/virtualMachines/storageProfile.dataDisks[*]",
+                                            "equals": "--"
+                                        }
+                                    },
+                                    {
+                                        "not": {
+                                            "field": "Microsoft.Compute/virtualMachineScaleSets/virtualMachineProfile.storageProfile.dataDisks[*].managedDisk.storageAccountType",
+                                            "in": [
+                                                "Premium_LRS"
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            "then": {
+                "effect": "audit"
+            }
+        }
+    }
+}

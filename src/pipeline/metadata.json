@@ -1,0 +1,25 @@
+{
+    "group1": {
+        "policy1": {
+            "description": "",
+            "displayName": "Audit for Single Instance - Virtual Machines",
+            "assignmentName": "Provides the ability to audit Virtual Machines for single instances.",
+            "definitionPath": "./src/policy/agreements/single-instance/virtual-machines/policy.rules.json",
+            "parameterPath": "./src/policy/agreements/single-instance/virtual-machines/policy.parameters.json"
+        },
+        "policy2": {
+            "description": "",
+            "displayName": "Audit for Single Instance - Virtual Machine Scale Sets",
+            "assignmentName": "Provides the ability to audit Virtual Machine Scale Sets for single instances.",
+            "definitionPath": "./src/policy/agreements/single-instance/scale-sets/policy.rules.json",
+            "parameterPath": "./src/policy/agreements/single-instance/scale-sets/policy.parameters.json"
+        },
+        "policy3": {
+            "description": "",
+            "displayName": "Audit for Single Instance - Availability Sets",
+            "assignmentName": "Provides the ability to audit Availability Sets for single instances.",
+            "definitionPath": "./src/policy/agreements/single-instance/availability-sets/policy.rules.json",
+            "parameterPath": "./src/policy/agreements/single-instance/availability-sets/policy.parameters.json"
+        }
+    }
+}

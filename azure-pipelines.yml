@@ -1,0 +1,92 @@
+trigger:
+  branches:
+    include:
+    - master
+  paths:
+    include:
+    - src/*
+    exclude:
+    - src/pipeline/README.md
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+- group: default
+- name: skipComponentGovernanceDetection
+  value: true
+
+stages:
+- stage: Build
+  jobs:
+  - job:
+    steps:
+    - task: PowerShell@2
+      displayName: 'Install modules'
+      inputs:
+        targetType: inline
+        script: |
+          $modules = 'Az.Accounts', 'Az.Resources'
+          Install-Module -Name $modules -Force
+      enabled: true
+    - task: PowerShell@2
+      displayName: 'Connect service principal'
+      inputs:
+        targetType: inline
+        script: |
+          . ./src/pipeline/build.ps1
+          Connect-ServicePrincipal `
+            -TenantId $(TENANT_ID) `
+            -SubscriptionId $(SUBSCRIPTION_ID) `
+            -ApplicationId $(APPLICATION_ID) `
+            -ClientSecret $(CLIENT_SECRET)
+      enabled: true
+    - task: PowerShell@2
+      displayName: 'Publish policy definition'
+      inputs:
+        targetType: inline
+        script: |
+          . ./src/pipeline/build.ps1
+          'policy1', 'policy2', 'policy3' | ForEach-Object {
+            Publish-Definition -Type 'Policy' -Group 'group1' -Policy $_ -Subscription 'LYTILL-CSU-AZURE' -Verbose
+          }
+      enabled: true
+    - task: PowerShell@2
+      displayName: 'Publish initiative definition'
+      inputs:
+        targetType: inline
+        script: |
+          . ./src/pipeline/build.ps1
+          Publish-Definition -Type 'Initiative' -Subscription 'LYTILL-CSU-AZURE' -Verbose
+      enabled: true
+- stage: Release
+  jobs:
+  - job:
+    steps:
+    - task: PowerShell@2
+      displayName: 'Install modules'
+      inputs:
+        targetType: inline
+        script: |
+          $modules = 'Az.Accounts', 'Az.Resources'
+          Install-Module -Name $modules -Force
+      enabled: true
+    - task: PowerShell@2
+      displayName: 'Connect service principal'
+      inputs:
+        targetType: inline
+        script: |
+          . ./src/pipeline/build.ps1
+          Connect-ServicePrincipal `
+            -TenantId $(TENANT_ID) `
+            -SubscriptionId $(SUBSCRIPTION_ID) `
+            -ApplicationId $(APPLICATION_ID) `
+            -ClientSecret $(CLIENT_SECRET)
+    - task: PowerShell@2
+      displayName: 'Publish assignment'
+      inputs:
+        targetType: inline
+        script: |
+          . ./src/pipeline/release.ps1
+          Publish-Assignment -Type 'Initiative' -Subscription 'LYTILL-CSU-AZURE' -Verbose
+      enabled: true

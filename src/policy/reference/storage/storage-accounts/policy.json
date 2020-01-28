@@ -1,0 +1,17 @@
+{
+    "properties": {
+        "displayName": "",
+        "description": "",
+        "parameters": {
+            "": {
+                "type": "",
+                "metadata": {
+                    "description": "",
+                    "displayName": ""
+                }
+            }
+        },
+        "policyRule": {
+        }
+    }
+}

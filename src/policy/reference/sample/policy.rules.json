@@ -1,0 +1,12 @@
+{
+    "if": {
+        "anyOf": [
+            {
+                "allOf": []
+            }
+        ]
+    },
+    "then": {
+        "effect": "audit"
+    }
+}

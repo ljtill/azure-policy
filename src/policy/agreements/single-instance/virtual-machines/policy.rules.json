@@ -1,0 +1,63 @@
+{
+    "if": {
+        "allOf": [
+            {
+                "allOf": [
+                    {
+                        "field": "type",
+                        "equals": "Microsoft.Compute/virtualMachines"
+                    },
+                    {
+                        "not": {
+                            "field": "[concat('tags[', parameters('tagKey'), ']')]",
+                            "equals": "[parameters('tagValue')]"
+                        }
+                    }
+                ]
+            },
+            {
+                "anyOf": [
+                    {
+                        "allOf": [
+                            {
+                                "field": "Microsoft.Compute/virtualMachines/availabilitySet.id",
+                                "exists": "false"
+                            },
+                            {
+                                "count": {
+                                    "field": "Microsoft.Compute/virtualMachines/zones[*]"
+                                },
+                                "less": 0
+                            }
+                        ]
+                    },
+                    {
+                        "field": "Microsoft.Compute/virtualMachines/storageProfile.osDisk.managedDisk.storageAccountType",
+                        "notEquals": "Premium_LRS"
+                    },
+                    {
+                        "allOf": [
+                            {
+                                "not": {
+                                    "field": "Microsoft.Compute/virtualMachines/storageProfile.dataDisks[*]",
+                                    "equals": "--"
+                                }
+                            },
+                            {
+                                "not": {
+                                    "field": "Microsoft.Compute/virtualMachines/storageProfile.dataDisks[*].managedDisk.storageAccountType",
+                                    "in": [
+                                        "Premium_LRS"
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "then": {
+        "effect": "audit"
+    }
+}
