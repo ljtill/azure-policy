@@ -1,0 +1,71 @@
+{
+  "mode": "All",
+  "policyRule": {
+    "if": {
+      "allOf": [
+        {
+          "not": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "contains": "Microsoft.Network/virtualNetworks",
+                    "field": "type"
+                  },
+                  {
+                    "field": "tags['Exception']",
+                    "exists": true
+                  }
+                ]
+              },
+              {
+                "contains": "Microsoft.Network/applicationSecurityGroups",
+                "field": "type"
+              },
+              {
+                "contains": "Microsoft.Network/networkSecurityGroups",
+                "field": "type"
+              },
+              {
+                "contains": "Microsoft.Network/loadBalancers",
+                "field": "type"
+              },
+              {
+                "contains": "Microsoft.Network/locations",
+                "field": "type"
+              },
+              {
+                "contains": "Microsoft.Network/networkInterfaces",
+                "field": "type"
+              },
+              {
+                "contains": "Microsoft.Network/privateDns",
+                "field": "type"
+              },
+              {
+                "contains": "Microsoft.Network/operations",
+                "field": "type"
+              },
+              {
+                "contains": "Microsoft.Network/privateEndpoint",
+                "field": "type"
+              }
+            ]
+          }
+        },
+        {
+          "anyOf": [
+            {
+              "contains": "Microsoft.Network/",
+              "field": "type"
+            }
+          ]
+        }
+      ]
+    },
+    "then": {
+      "effect": "deny"
+    }
+  },
+  "parameters": {}
+}
