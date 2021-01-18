@@ -55,7 +55,7 @@ function Publish-Assignment {
         [string]$Type,
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet("group1")]
+        [ValidateSet("group1", "group2")]
         [string]$Group,
 
         [Parameter(Mandatory = $false)]
@@ -64,10 +64,18 @@ function Publish-Assignment {
     )
 
     begin {
-        Write-Verbose -Message ("Initiating function " + $MyInvocation.MyCommand + " begin")
+        Write-Debug -Message ("Initiating function " + $MyInvocation.MyCommand + " begin")
+    }
 
-        $script:category = '{"category":"Resiliency"}'
+    process {
+        Write-Debug -Message ("Initiating function " + $MyInvocation.MyCommand + " process")
+
+        # Load metadata
+        Write-Verbose -Message "- Load metadata"
         $script:metadata = Get-Content -Path "./src/pipeline/metadata.json" | ConvertFrom-Json -AsHashtable
+        
+        # Generate scope
+        Write-Verbose -Message "- Generate scope value"
         switch ($PSCmdlet.ParameterSetName) {
             "ManagementGroup" {
                 $script:scope = ("/providers/Microsoft.Management/managementGroups/" + $managementGroup)
@@ -77,57 +85,69 @@ function Publish-Assignment {
             }
         }
 
+        # Generate params
+        Write-Verbose -Message "- Generate params value"
         switch ($type) {
             "Initiative" {
-                $script:definition = Get-AzPolicySetDefinition -Custom | Where-Object -FilterScript { $_.Properties.metadata.category -eq "Resiliency" }
-                $params = @{ 
-                    Name                = "Resiliency"
-                    DisplayName         = "CET Resiliency - Compute"
-                    Description         = "TBD"
-                    PolicySetDefinition = $script:definition
-                    Metadata            = $script:category
-                    Scope               = $script:scope
-                } 
+                # [BUG] Management Group / Subscription selector
+                # $script:definition = Get-AzPolicySetDefinition -Custom | Where-Object -FilterScript { $_.Properties.metadata.category -eq "" }
+                # $params = @{ 
+                #     Name                = ""
+                #     DisplayName         = ""
+                #     Description         = ""
+                #     PolicySetDefinition = $script:definition
+                #     Metadata            = ""
+                #     Scope               = $script:scope
+                # } 
             }
             "Policy" {
                 $script:assignmentName = $script:metadata["$group"]["$policy"].assignmentName
                 $script:definitionDisplayName = $script:metadata["$group"]["$policy"].displayName
-                $params = @{
-                    Name             = $script:assignmentName
-                    DisplayName      = ("CET " + $script:name)
-                    PolicyDefinition = $script:definition
-                    Metadata         = $script:category
-                    Scope            = $script:scope
+                switch ($PSCmdlet.ParameterSetName) {
+                    "ManagementGroup" {
+                        $script:definition = Get-AzPolicyDefinition -ManagementGroupName $managementGroup -Custom | Where-Object -FilterScript { $_.Properties.displayName -eq $script:definitionDisplayName }
+                    }
+                    "Subscription" {
+                        $script:definition = Get-AzPolicyDefinition -SubscriptionId $subscription -Custom | Where-Object -FilterScript { $_.Properties.displayName -eq $script:definitionDisplayName }
+                    }
+                }
+
+                switch ($script:metadata["$group"]["$policy"].effect) {
+                    "deployIfNotExists" {
+                        $params = @{
+                            Name             = $script:assignmentName
+                            DisplayName      = $script:definitionDisplayName
+                            PolicyDefinition = $script:definition
+                            Metadata         = $script:category
+                            Scope            = $script:scope
+                            AssignIdentity   = $true
+                            Location         = 'uksouth'
+                        }
+                    }
                 }
             }
         }
-    }
 
-    process {
-        Write-Verbose -Message ("Initiating function " + $MyInvocation.MyCommand + " process")
         switch ($type) {
             "Initiative" {
-                $script:assignment = Get-AzPolicyAssignment | Where-Object -FilterScript { $_.Properties.metadata.category -eq "Resiliency" }
-                if ($null -ne $script:assignment) {
-                    Write-Verbose -Message " - Remove initiative assignment"
-                    Remove-AzPolicyAssignment -Name $script:assignment.Name -Scope $script:scope
-                }
+                # $script:assignment = Get-AzPolicyAssignment | Where-Object -FilterScript { $_.Properties.metadata.category -eq "Resiliency" }
+                # if ($null -ne $script:assignment) {
+                #     Write-Verbose -Message " - Remove initiative assignment"
+                #     Remove-AzPolicyAssignment -Name $script:assignment.Name -Scope $script:scope
+                # }
 
-                Write-Verbose -Message " - Create initiative assignment"
-                New-AzPolicyAssignment @params
+                # Write-Verbose -Message " - Create initiative assignment"
+                # New-AzPolicyAssignment @params
             }
             "Policy" {
-                Write-Verbose -Message " - Retrieve policy assignment"
+                Write-Verbose -Message "- Retrieve policy assignment"
                 $script:assignment = Get-AzPolicyAssignment | Where-Object -FilterScript { $_.Properties.metadata.category -eq "Resiliency" }
                 if ($null -ne $script:assignment) {
-                    Write-Verbose -Message " - Remove policy assignment"
+                    Write-Verbose -Message "- Remove policy assignment"
                     Remove-AzPolicyAssignment -Name $script:assignment.Name -Scope $script:scope
                 }
-
-                Write-Verbose -Message " - Retrieve policy definition"
-                $script:definition = Get-AzPolicyDefinition -Custom | Where-Object -FilterScript { $_.Properties.displayName -eq $script:definitionDisplayName }
                 
-                Write-Verbose -Message " - Create policy assignment"
+                Write-Verbose -Message "- Create policy assignment"
                 New-AzPolicyAssignment @params
             }
         }
@@ -135,7 +155,7 @@ function Publish-Assignment {
     }
 
     end {
-        Write-Verbose -Message ("Initiating function " + $MyInvocation.MyCommand + " end")
+        Write-Debug -Message ("Initiating function " + $MyInvocation.MyCommand + " end")
     }
 
 }

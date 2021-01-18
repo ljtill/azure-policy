@@ -55,7 +55,7 @@ function Publish-Definition {
         [string]$Type,
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet("group1")]
+        [ValidateSet("group1", "group2")]
         [string]$Group,
 
         [Parameter(Mandatory = $false)]
@@ -64,10 +64,18 @@ function Publish-Definition {
     )
 
     begin {
-        Write-Verbose -Message ("Initiating function " + $MyInvocation.MyCommand + " begin")
+        Write-Debug -Message ("Initiating function " + $MyInvocation.MyCommand + " begin")
+    }
 
-        $script:category = '{"category":"Resiliency"}'
+    process {
+        Write-Debug -Message ("Initiating function " + $MyInvocation.MyCommand + " process")
+
+        # Load metadata
+        Write-Verbose -Message "- Load metadata"
         $script:metadata = Get-Content -Path "./src/pipeline/metadata.json" | ConvertFrom-Json -AsHashtable
+        
+        # Generate scope
+        Write-Verbose -Message "- Generate scope value"
         switch ($PSCmdlet.ParameterSetName) {
             "ManagementGroup" {
                 $script:scope = ("/providers/Microsoft.Management/managementGroups/" + $managementGroup)
@@ -77,37 +85,37 @@ function Publish-Definition {
             }
         }
 
+        # Generate params
+        Write-Verbose -Message "- Generate params value"
         switch ($type) {
             "Initiative" {
-                $script:definitions = Get-AzPolicyDefinition -Custom | Where-Object -FilterScript { $_.Properties.metadata.category -eq "Resiliency" }
-                $script:policies = @()
-                $script:definitions | ForEach-Object {
-                    $script:definitionId = $_ | Select-Object -ExpandProperty "PolicyDefinitionId"
-                    $script:policies += New-Object PSObject –Property @{ policyDefinitionId = $script:definitionId }
-                }
-                switch ($PSCmdlet.ParameterSetName) {
-                    "ManagementGroup" {
-                        $params = @{ 
-                            Name             = (New-Guid).Guid
-                            DisplayName      = "CET Resiliency - Compute"
-                            Description      = "-"
-                            ManagementGroup  = $managementGroup
-                            PolicyDefinition = ($script:policies | ConvertTo-Json -AsArray)
-                            Metadata         = $script:category 
-                        }
-                    }
-                    "Subscription" {
-                        $params = @{ 
-                            Name             = (New-Guid).Guid
-                            DisplayName      = "CET Resiliency - Compute"
-                            Description      = "-"
-                            PolicyDefinition = ($script:policies | ConvertTo-Json -AsArray)
-                            Metadata         = $script:category 
-                        }
-                    }
-                }
-
-                
+                # $script:definitions = Get-AzPolicyDefinition -Custom | Where-Object -FilterScript { $_.Properties.metadata.category -eq "Resiliency" }
+                # $script:policies = @()
+                # $script:definitions | ForEach-Object {
+                #     $script:definitionId = $_ | Select-Object -ExpandProperty "PolicyDefinitionId"
+                #     $script:policies += New-Object PSObject –Property @{ policyDefinitionId = $script:definitionId }
+                # }
+                # switch ($PSCmdlet.ParameterSetName) {
+                #     "ManagementGroup" {
+                #         $params = @{ 
+                #             Name             = (New-Guid).Guid
+                #             DisplayName      = "CET Resiliency - Compute"
+                #             Description      = "-"
+                #             ManagementGroup  = $managementGroup
+                #             PolicyDefinition = ($script:policies | ConvertTo-Json -AsArray)
+                #             Metadata         = $script:category 
+                #         }
+                #     }
+                #     "Subscription" {
+                #         $params = @{ 
+                #             Name             = (New-Guid).Guid
+                #             DisplayName      = "CET Resiliency - Compute"
+                #             Description      = "-"
+                #             PolicyDefinition = ($script:policies | ConvertTo-Json -AsArray)
+                #             Metadata         = $script:category 
+                #         }
+                #     }
+                # }
             }
             "Policy" {
                 $script:assignmentName = $script:metadata["$group"]["$policy"].assignmentName
@@ -137,11 +145,6 @@ function Publish-Definition {
                 }
             }
         }
-
-    }
-
-    process {
-        Write-Verbose -Message ("Initiating function " + $MyInvocation.MyCommand + " process")
 
         switch ($type) {
             "Initiative" {
@@ -201,7 +204,7 @@ function Publish-Definition {
     }
 
     end {
-        Write-Verbose -Message ("Initiating function " + $MyInvocation.MyCommand + " end")
+        Write-Debug -Message ("Initiating function " + $MyInvocation.MyCommand + " end")
     }
 
 }
