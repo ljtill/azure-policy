@@ -1,41 +1,46 @@
 {
   "group1": {
     "policy1": {
-      "description": "",
       "displayName": "Audit for Single Instance - Virtual Machines",
       "assignmentName": "Provides the ability to audit Virtual Machines for single instances.",
+      "name": "d4685ace-7f09-40c7-9144-55c2644d059b",
+      "description": "",
       "definitionPath": "./src/policy/definitions/agreements/single-instance/virtual-machines/policy.rules.json",
       "parameterPath": "./src/policy/definitions/agreements/single-instance/virtual-machines/policy.parameters.json"
     },
     "policy2": {
-      "description": "",
       "displayName": "Audit for Single Instance - Virtual Machine Scale Sets",
       "assignmentName": "Provides the ability to audit Virtual Machine Scale Sets for single instances.",
+      "name": "d45b4aa2-aea3-4a12-923b-bc684f3a5f40",
+      "description": "",
       "definitionPath": "./src/policy/definitions/agreements/single-instance/scale-sets/policy.rules.json",
       "parameterPath": "./src/policy/definitions/agreements/single-instance/scale-sets/policy.parameters.json"
     },
     "policy3": {
-      "description": "",
       "displayName": "Audit for Single Instance - Availability Sets",
       "assignmentName": "Provides the ability to audit Availability Sets for single instances.",
+      "name": "eab2b702-b698-4e94-b349-1712675efccb",
+      "description": "",
       "definitionPath": "./src/policy/definitions/agreements/single-instance/availability-sets/policy.rules.json",
       "parameterPath": "./src/policy/definitions/agreements/single-instance/availability-sets/policy.parameters.json"
     }
   },
   "group2": {
     "policy1": {
-      "description": "",
       "displayName": "Deploy Network Security Groups",
-      "effect": "deployIfNotExists",
       "assignmentName": "Test1",
+      "name": "30b3e3b5-534a-4a52-94ad-81553382d09d",
+      "description": "",
+      "effect": "deployIfNotExists",
       "definitionPath": "./src/policy/definitions/reference/network/security-group/policy.rules.json",
       "parameterPath": "./src/policy/definitions/reference/network/security-group/policy.parameters.json"
     },
     "policy2": {
-      "description": "",
       "displayName": "Deploy Route Tables",
-      "effect": "deployIfNotExists",
       "assignmentName": "Test2",
+      "name": "a9b0124f-af45-4c12-8f83-8608447129e3",
+      "description": "",
+      "effect": "deployIfNotExists",
       "definitionPath": "./src/policy/definitions/reference/network/route-tables/policy.rules.json",
       "parameterPath": "./src/policy/definitions/reference/network/route-tables/policy.parameters.json"
     }

@@ -75,7 +75,7 @@ function Publish-Definition {
         $script:metadata = Get-Content -Path "./src/pipeline/metadata.json" | ConvertFrom-Json -AsHashtable
         
         # Generate scope
-        Write-Verbose -Message "- Generate scope value"
+        Write-Verbose -Message "- Generate scope"
         switch ($PSCmdlet.ParameterSetName) {
             "ManagementGroup" {
                 $script:scope = ("/providers/Microsoft.Management/managementGroups/" + $managementGroup)
@@ -85,61 +85,36 @@ function Publish-Definition {
             }
         }
 
+        # Parse metadata
+        Write-Verbose -Message "- Parse metadata"
+        $script:definitionName = $script:metadata["$group"]["$policy"].name
+        $script:definitionDisplayName = $script:metadata["$group"]["$policy"].displayName
+        $script:definitionPath = $script:metadata["$group"]["$policy"].definitionPath
+        $script:definitionParametersPath = $script:metadata["$group"]["$policy"].parameterPath
+        $script:assignmentName = $script:metadata["$group"]["$policy"].assignmentName
+
         # Generate params
-        Write-Verbose -Message "- Generate params value"
+        Write-Verbose -Message "- Generate params"
         switch ($type) {
             "Initiative" {
-                # $script:definitions = Get-AzPolicyDefinition -Custom | Where-Object -FilterScript { $_.Properties.metadata.category -eq "Resiliency" }
-                # $script:policies = @()
-                # $script:definitions | ForEach-Object {
-                #     $script:definitionId = $_ | Select-Object -ExpandProperty "PolicyDefinitionId"
-                #     $script:policies += New-Object PSObject –Property @{ policyDefinitionId = $script:definitionId }
-                # }
-                # switch ($PSCmdlet.ParameterSetName) {
-                #     "ManagementGroup" {
-                #         $params = @{ 
-                #             Name             = (New-Guid).Guid
-                #             DisplayName      = "CET Resiliency - Compute"
-                #             Description      = "-"
-                #             ManagementGroup  = $managementGroup
-                #             PolicyDefinition = ($script:policies | ConvertTo-Json -AsArray)
-                #             Metadata         = $script:category 
-                #         }
-                #     }
-                #     "Subscription" {
-                #         $params = @{ 
-                #             Name             = (New-Guid).Guid
-                #             DisplayName      = "CET Resiliency - Compute"
-                #             Description      = "-"
-                #             PolicyDefinition = ($script:policies | ConvertTo-Json -AsArray)
-                #             Metadata         = $script:category 
-                #         }
-                #     }
-                # }
             }
             "Policy" {
-                $script:assignmentName = $script:metadata["$group"]["$policy"].assignmentName
-                $script:definitionDisplayName = $script:metadata["$group"]["$policy"].displayName
-                $script:definitionPath = $script:metadata["$group"]["$policy"].definitionPath
-                $script:parameterPath = $script:metadata["$group"]["$policy"].parameterPath
                 switch ($PSCmdlet.ParameterSetName) {
                     "ManagementGroup" {
                         $params = @{
-                            Name            = (New-Guid).Guid
+                            Name            = $script:definitionName
                             DisplayName     = $script:definitionDisplayName
                             ManagementGroup = $managementGroup
-                            Metadata        = $script:category
                             Policy          = $script:definitionPath
-                            Parameter       = $script:parameterPath
+                            Parameter       = $script:definitionParametersPath
                         }
                     }
                     "Subscription" {
                         $params = @{
-                            Name        = (New-Guid).Guid
+                            Name        = $script:definitionName
                             DisplayName = $script:definitionDisplayName
-                            Metadata    = $script:category
                             Policy      = $script:definitionPath
-                            Parameter   = $script:parameterPath
+                            Parameter   = $script:definitionParametersPath
                         }
                     }
                 }
@@ -148,53 +123,38 @@ function Publish-Definition {
 
         switch ($type) {
             "Initiative" {
-                Write-Verbose -Message "- Retrieve initiative assignment"
-                $script:assignment = Get-AzPolicyAssignment | Where-Object -FilterScript { $_.Properties.metadata.category -eq "Resiliency" }
-                if ($null -ne $script:assignment) {
-                    Write-Verbose -Message "- Remove initiative assignment"
-                    Remove-AzPolicyAssignment -Name $script:assignment.Name -Scope $script:scope
-                }
-
-                Write-Verbose -Message "- Retrieve initiative definition"
-                $script:definition = Get-AzPolicySetDefinition -Custom | Where-Object -FilterScript { $_.Properties.metadata.category -eq "Resiliency" }
-                if ($null -eq $script:definition) {
-                    Write-Verbose -Message "- New initiative definition"
-                    New-AzPolicySetDefinition @params
-                }
-                else {
-                    Write-Verbose -Message "- Update initiative definition"
-                    switch ($PSCmdlet.ParameterSetName) {
-                        "ManagementGroup" {
-                            Set-AzPolicySetDefinition -Name $script:definition.Name -ManagementGroupName $managementGroup -PolicyDefinition ($script:policies | ConvertTo-Json -AsArray)
-                        }
-                        "Subscription" {
-                            Set-AzPolicySetDefinition -Name $script:definition.Name -PolicyDefinition ($script:policies | ConvertTo-Json -AsArray)
-                        }
-                    }
-                }
             }
             "Policy" {
-                Write-Verbose -Message "- Retrieve policy assignment"
-                $script:assignment = Get-AzPolicyAssignment | Where-Object -FilterScript { $_.Properties.metadata.category -eq "Resiliency" }
+                Write-Verbose -Message "- Retrieve assignment"
+                $script:assignment = Get-AzPolicyAssignment | Where-Object -FilterScript { $_.Name -eq $script:assignmentName }
                 if ($null -ne $script:assignment) {
-                    Write-Verbose -Message "- Remove policy assignment"
+                    Write-Verbose -Message "- Remove assignment"
                     Remove-AzPolicyAssignment -Name $script:assignmentName -Scope $script:scope
                 }
 
-                Write-Verbose -Message "- Retrieve policy definition"
-                $script:definition = Get-AzPolicyDefinition -Custom | Where-Object -FilterScript { $_.Properties.displayName -eq $script:definitionDisplayName }
+                Write-Verbose -Message "- Retrieve definition"
+                switch ($PSCmdlet.ParameterSetName) {
+                    "ManagementGroup" {
+                        $script:definition = Get-AzPolicyDefinition -ManagementGroupName $managementGroup -Custom | Where-Object -FilterScript { $_.Properties.displayName -eq $script:definitionDisplayName }
+                    }
+                    "Subscription" {
+                        $script:definition = Get-AzPolicyDefinition  -SubscriptionId $subscription -Custom | Where-Object -FilterScript { $_.Properties.displayName -eq $script:definitionDisplayName }
+                    }
+                }
+
+                Write-Host $script:definition
                 if ($null -eq $script:definition) {
-                    Write-Verbose -Message "- Create policy definition"
+                    Write-Verbose -Message "- Create definition"
                     New-AzPolicyDefinition @params
                 }
                 else {
-                    Write-Verbose -Message "- Update policy definition"
+                    Write-Verbose -Message "- Update definition"
                     switch ($PSCmdlet.ParameterSetName) {
                         "ManagementGroup" {
-                            Set-AzPolicyDefinition -Name $script:definition.Name -ManagementGroupName $managementGroup -Policy $script:definitionPath -Parameter $script:parameterPath
+                            Set-AzPolicyDefinition -Name $script:definitionName -ManagementGroupName $managementGroup -Policy $script:definitionPath -Parameter $script:definitionParametersPath
                         }
                         "Subscription" {
-                            Set-AzPolicyDefinition -Name $script:definition.Name -Policy $script:definitionPath -Parameter $script:parameterPath
+                            Set-AzPolicyDefinition -Name $script:definitionName -Policy $script:definitionPath -Parameter $script:parameterPath
                         }
                     }
                 }
