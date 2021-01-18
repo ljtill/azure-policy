@@ -73,9 +73,18 @@ function Publish-Assignment {
         # Load metadata
         Write-Verbose -Message "- Load metadata"
         $script:metadata = Get-Content -Path "./src/pipeline/metadata.json" | ConvertFrom-Json -AsHashtable
+
+        # Parse metadata
+        Write-Verbose -Message "- Parse metadata"
+        $script:definitionName = $script:metadata["$group"]["$policy"].name
+        $script:definitionDisplayName = $script:metadata["$group"]["$policy"].displayName
+        $script:definitionPath = $script:metadata["$group"]["$policy"].definitionPath
+        $script:definitionParametersPath = $script:metadata["$group"]["$policy"].parameterPath
+        $script:assignmentName = $script:metadata["$group"]["$policy"].assignmentName
         
+
         # Generate scope
-        Write-Verbose -Message "- Generate scope value"
+        Write-Verbose -Message "- Generate scope"
         switch ($PSCmdlet.ParameterSetName) {
             "ManagementGroup" {
                 $script:scope = ("/providers/Microsoft.Management/managementGroups/" + $managementGroup)
@@ -86,23 +95,12 @@ function Publish-Assignment {
         }
 
         # Generate params
-        Write-Verbose -Message "- Generate params value"
+        Write-Verbose -Message "- Generate params"
         switch ($type) {
             "Initiative" {
-                # [BUG] Management Group / Subscription selector
-                # $script:definition = Get-AzPolicySetDefinition -Custom | Where-Object -FilterScript { $_.Properties.metadata.category -eq "" }
-                # $params = @{ 
-                #     Name                = ""
-                #     DisplayName         = ""
-                #     Description         = ""
-                #     PolicySetDefinition = $script:definition
-                #     Metadata            = ""
-                #     Scope               = $script:scope
-                # } 
             }
             "Policy" {
-                $script:assignmentName = $script:metadata["$group"]["$policy"].assignmentName
-                $script:definitionDisplayName = $script:metadata["$group"]["$policy"].displayName
+                Write-Verbose -Message "- Retrieve definition"
                 switch ($PSCmdlet.ParameterSetName) {
                     "ManagementGroup" {
                         $script:definition = Get-AzPolicyDefinition -ManagementGroupName $managementGroup -Custom | Where-Object -FilterScript { $_.Properties.displayName -eq $script:definitionDisplayName }
@@ -118,7 +116,6 @@ function Publish-Assignment {
                             Name             = $script:assignmentName
                             DisplayName      = $script:definitionDisplayName
                             PolicyDefinition = $script:definition
-                            Metadata         = $script:category
                             Scope            = $script:scope
                             AssignIdentity   = $true
                             Location         = 'uksouth'
@@ -130,25 +127,17 @@ function Publish-Assignment {
 
         switch ($type) {
             "Initiative" {
-                # $script:assignment = Get-AzPolicyAssignment | Where-Object -FilterScript { $_.Properties.metadata.category -eq "Resiliency" }
-                # if ($null -ne $script:assignment) {
-                #     Write-Verbose -Message " - Remove initiative assignment"
-                #     Remove-AzPolicyAssignment -Name $script:assignment.Name -Scope $script:scope
-                # }
-
-                # Write-Verbose -Message " - Create initiative assignment"
-                # New-AzPolicyAssignment @params
             }
             "Policy" {
                 Write-Verbose -Message "- Retrieve policy assignment"
-                $script:assignment = Get-AzPolicyAssignment | Where-Object -FilterScript { $_.Properties.metadata.category -eq "Resiliency" }
+                $script:assignment = Get-AzPolicyAssignment -Scope $script:scope | Where-Object -FilterScript { $_.Name -eq $script:assignmentName }
                 if ($null -ne $script:assignment) {
                     Write-Verbose -Message "- Remove policy assignment"
                     Remove-AzPolicyAssignment -Name $script:assignment.Name -Scope $script:scope
                 }
                 
                 Write-Verbose -Message "- Create policy assignment"
-                New-AzPolicyAssignment @params
+                New-AzPolicyAssignment @params -WarningAction SilentlyContinue
             }
         }
         

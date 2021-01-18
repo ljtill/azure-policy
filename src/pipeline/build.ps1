@@ -73,7 +73,15 @@ function Publish-Definition {
         # Load metadata
         Write-Verbose -Message "- Load metadata"
         $script:metadata = Get-Content -Path "./src/pipeline/metadata.json" | ConvertFrom-Json -AsHashtable
-        
+
+        # Parse metadata
+        Write-Verbose -Message "- Parse metadata"
+        $script:definitionName = $script:metadata["$group"]["$policy"].name
+        $script:definitionDisplayName = $script:metadata["$group"]["$policy"].displayName
+        $script:definitionPath = $script:metadata["$group"]["$policy"].definitionPath
+        $script:definitionParametersPath = $script:metadata["$group"]["$policy"].parameterPath
+        $script:assignmentName = $script:metadata["$group"]["$policy"].assignmentName
+
         # Generate scope
         Write-Verbose -Message "- Generate scope"
         switch ($PSCmdlet.ParameterSetName) {
@@ -84,14 +92,6 @@ function Publish-Definition {
                 $script:scope = ("/subscriptions/" + (Get-AzSubscription -SubscriptionName $subscription).Id)
             }
         }
-
-        # Parse metadata
-        Write-Verbose -Message "- Parse metadata"
-        $script:definitionName = $script:metadata["$group"]["$policy"].name
-        $script:definitionDisplayName = $script:metadata["$group"]["$policy"].displayName
-        $script:definitionPath = $script:metadata["$group"]["$policy"].definitionPath
-        $script:definitionParametersPath = $script:metadata["$group"]["$policy"].parameterPath
-        $script:assignmentName = $script:metadata["$group"]["$policy"].assignmentName
 
         # Generate params
         Write-Verbose -Message "- Generate params"
@@ -126,7 +126,7 @@ function Publish-Definition {
             }
             "Policy" {
                 Write-Verbose -Message "- Retrieve assignment"
-                $script:assignment = Get-AzPolicyAssignment | Where-Object -FilterScript { $_.Name -eq $script:assignmentName }
+                $script:assignment = Get-AzPolicyAssignment -Scope $script:scope | Where-Object -FilterScript { $_.Name -eq $script:assignmentName }
                 if ($null -ne $script:assignment) {
                     Write-Verbose -Message "- Remove assignment"
                     Remove-AzPolicyAssignment -Name $script:assignmentName -Scope $script:scope
@@ -160,7 +160,6 @@ function Publish-Definition {
                 }
             }
         }
-
     }
 
     end {
