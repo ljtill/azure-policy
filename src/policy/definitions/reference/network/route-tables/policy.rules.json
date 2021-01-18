@@ -10,7 +10,7 @@
   "then": {
     "effect": "deployIfNotExists",
     "details": {
-      "type": "Microsoft.Network/networkSecurityGroups",
+      "type": "Microsoft.Network/routeTables",
       "roleDefinitionIds": [
         "/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
       ],
@@ -37,7 +37,17 @@
               }
             },
             "variables": {},
-            "resources": [],
+            "resources": [
+              {
+                "type": "Microsoft.Network/routeTables",
+                "apiVersion": "2019-02-01",
+                "name": "[parameters('name')]",
+                "location": "[parameters('location')]",
+                "properties": {
+                  "disableBgpRoutePropagation": true
+                }
+              }
+            ],
             "outputs": {}
           }
         }
