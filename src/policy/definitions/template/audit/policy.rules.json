@@ -1,0 +1,7 @@
+{
+    "if": {
+    },
+    "then": {
+        "effect": "audit"
+    }
+}
