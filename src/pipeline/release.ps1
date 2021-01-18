@@ -104,9 +104,15 @@ function Publish-Assignment {
                 switch ($PSCmdlet.ParameterSetName) {
                     "ManagementGroup" {
                         $script:definition = Get-AzPolicyDefinition -ManagementGroupName $managementGroup -Custom | Where-Object -FilterScript { $_.Properties.displayName -eq $script:definitionDisplayName }
+                        if ($null -eq $script:definition) {
+                            Write-Error -Message "Unable to locate definition"
+                        }
                     }
                     "Subscription" {
                         $script:definition = Get-AzPolicyDefinition -SubscriptionId $subscription -Custom | Where-Object -FilterScript { $_.Properties.displayName -eq $script:definitionDisplayName }
+                        if ($null -eq $script:definition) {
+                            Write-Error -Message "Unable to locate definition"
+                        }
                     }
                 }
 
@@ -129,18 +135,17 @@ function Publish-Assignment {
             "Initiative" {
             }
             "Policy" {
-                Write-Verbose -Message "- Retrieve policy assignment"
+                Write-Verbose -Message "- Retrieve assignment"
                 $script:assignment = Get-AzPolicyAssignment -Scope $script:scope | Where-Object -FilterScript { $_.Name -eq $script:assignmentName }
                 if ($null -ne $script:assignment) {
-                    Write-Verbose -Message "- Remove policy assignment"
+                    Write-Verbose -Message "- Remove assignment"
                     Remove-AzPolicyAssignment -Name $script:assignment.Name -Scope $script:scope
                 }
                 
-                Write-Verbose -Message "- Create policy assignment"
+                Write-Verbose -Message "- Create assignment"
                 New-AzPolicyAssignment @params -WarningAction SilentlyContinue
             }
         }
-        
     }
 
     end {

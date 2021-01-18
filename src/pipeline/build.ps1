@@ -141,8 +141,7 @@ function Publish-Definition {
                         $script:definition = Get-AzPolicyDefinition  -SubscriptionId $subscription -Custom | Where-Object -FilterScript { $_.Properties.displayName -eq $script:definitionDisplayName }
                     }
                 }
-
-                Write-Host $script:definition
+                
                 if ($null -eq $script:definition) {
                     Write-Verbose -Message "- Create definition"
                     New-AzPolicyDefinition @params
