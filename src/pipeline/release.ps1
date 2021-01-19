@@ -69,13 +69,13 @@ function Publish-Assignment {
                 Write-Verbose -Message "- Retrieve definition"
                 switch ($PSCmdlet.ParameterSetName) {
                     "ManagementGroup" {
-                        $script:definition = Get-AzPolicyDefinition -ManagementGroupName $script:managementGroup -Custom | Where-Object -FilterScript { $_.Properties.displayName -eq $script:definitionDisplayName }
+                        $script:definition = Get-AzPolicyDefinition -ManagementGroupName $script:managementGroupId -Custom | Where-Object -FilterScript { $_.Properties.displayName -eq $script:definitionDisplayName }
                         if ($null -eq $script:definition) {
                             Write-Error -Message "Unable to locate definition"
                         }
                     }
                     "Subscription" {
-                        $script:definition = Get-AzPolicyDefinition -SubscriptionId $script:subscription -Custom | Where-Object -FilterScript { $_.Properties.displayName -eq $script:definitionDisplayName }
+                        $script:definition = Get-AzPolicyDefinition -SubscriptionId $script:subscriptionId -Custom | Where-Object -FilterScript { $_.Properties.displayName -eq $script:definitionDisplayName }
                         if ($null -eq $script:definition) {
                             Write-Error -Message "Unable to locate definition"
                         }
