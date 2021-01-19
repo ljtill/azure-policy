@@ -55,12 +55,7 @@ function Publish-Assignment {
         [string]$Type,
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet("group1", "group2")]
-        [string]$Group,
-
-        [Parameter(Mandatory = $false)]
-        [ValidateSet("policy1", "policy2", "policy3")]
-        [string]$Policy
+        [string]$Name
     )
 
     begin {
@@ -72,15 +67,16 @@ function Publish-Assignment {
 
         # Load metadata
         Write-Verbose -Message "- Load metadata"
-        $script:metadata = Get-Content -Path "./src/pipeline/metadata.json" | ConvertFrom-Json -AsHashtable
+        $script:metadata = Get-Content -Path "./src/pipeline/metadata.json" | ConvertFrom-Json
 
         # Parse metadata
         Write-Verbose -Message "- Parse metadata"
-        $script:definitionName = $script:metadata["$group"]["$policy"].name
-        $script:definitionDisplayName = $script:metadata["$group"]["$policy"].displayName
-        $script:definitionPath = $script:metadata["$group"]["$policy"].definitionPath
-        $script:definitionParametersPath = $script:metadata["$group"]["$policy"].parameterPath
-        $script:assignmentName = $script:metadata["$group"]["$policy"].assignmentName
+        $script:metadata = $script:metadata | Where-Object -FilterScript { $_.assignmentName -eq $Name }
+        $script:definitionName = $script:metadata | Select-Object -ExpandProperty name
+        $script:definitionDisplayName = $script:metadata | Select-Object -ExpandProperty displayName
+        $script:definitionPath = $script:metadata | Select-Object -ExpandProperty definitionPath
+        $script:definitionParametersPath = $script:metadata | Select-Object -ExpandProperty parameterPath
+        $script:assignmentName = $script:metadata | Select-Object -ExpandProperty assignmentName
         
 
         # Generate scope
