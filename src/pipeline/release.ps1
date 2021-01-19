@@ -1,45 +1,5 @@
 #Requires -Modules Az.Accounts, Az.Resources
 
-function Connect-ServicePrincipal {
-
-    [CmdletBinding()]
-    param (
-        [Parameter()]
-        $TenantId,
-
-        [Parameter()]
-        $SubscriptionId,
-
-        [Parameter()]
-        $ApplicationId,
-
-        [Parameter()]
-        $ClientSecret
-    )
-
-    begin {
-        Write-Verbose -Message ("Initiating function " + $MyInvocation.MyCommand + " begin")
-
-        $clientSecret = ConvertTo-SecureString -String $clientSecret -AsPlainText -Force
-        $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $applicationId, $clientSecret
-    }
-
-    process {
-        Write-Verbose -Message ("Initiating function " + $MyInvocation.MyCommand + " process")
-
-        try {
-            Connect-AzAccount -TenantId $tenantId -SubscriptionId $SubscriptionId -Credential $credential -ServicePrincipal -ErrorAction Stop
-        }
-        catch {
-            Write-Error -Message $_.Exception.Message
-        }
-    }
-
-    end {
-        Write-Verbose -Message ("Initiating function " + $MyInvocation.MyCommand + " end")
-    }
-
-}
 function Publish-Assignment {
 
     [CmdletBinding()]
@@ -77,16 +37,28 @@ function Publish-Assignment {
         $script:definitionPath = $script:metadata | Select-Object -ExpandProperty definitionPath
         $script:definitionParametersPath = $script:metadata | Select-Object -ExpandProperty parameterPath
         $script:assignmentName = $script:metadata | Select-Object -ExpandProperty assignmentName
-        
+
+        switch ($PSCmdlet.ParameterSetName) {
+            "ManagementGroup" {
+                # Get management group
+                Write-Verbose -Message "- Retrieve management group"
+                $script:managementGroupId = Get-AzManagementGroup | Where-Object -FilterScript { $_.DisplayName -eq $ManagementGroup } | Select-Object -ExpandProperty Id
+            }
+            "Subscription" {
+                # Get subscription
+                Write-Verbose -Message "- Retrieve subscription"
+                $script:subscriptionId = (Get-AzSubscription -SubscriptionName $subscription).Id
+            }
+        }
 
         # Generate scope
         Write-Verbose -Message "- Generate scope"
         switch ($PSCmdlet.ParameterSetName) {
             "ManagementGroup" {
-                $script:scope = ("/providers/Microsoft.Management/managementGroups/" + $managementGroup)
+                $script:scope = ("/providers/Microsoft.Management/managementGroups/" + $script:managementGroupId)
             }
             "Subscription" {
-                $script:scope = ("/subscriptions/" + (Get-AzSubscription -SubscriptionName $subscription).Id)
+                $script:scope = ("/subscriptions/" + $script:subscriptionId)
             }
         }
 
@@ -97,13 +69,13 @@ function Publish-Assignment {
                 Write-Verbose -Message "- Retrieve definition"
                 switch ($PSCmdlet.ParameterSetName) {
                     "ManagementGroup" {
-                        $script:definition = Get-AzPolicyDefinition -ManagementGroupName $managementGroup -Custom | Where-Object -FilterScript { $_.Properties.displayName -eq $script:definitionDisplayName }
+                        $script:definition = Get-AzPolicyDefinition -ManagementGroupName $script:managementGroup -Custom | Where-Object -FilterScript { $_.Properties.displayName -eq $script:definitionDisplayName }
                         if ($null -eq $script:definition) {
                             Write-Error -Message "Unable to locate definition"
                         }
                     }
                     "Subscription" {
-                        $script:definition = Get-AzPolicyDefinition -SubscriptionId $subscription -Custom | Where-Object -FilterScript { $_.Properties.displayName -eq $script:definitionDisplayName }
+                        $script:definition = Get-AzPolicyDefinition -SubscriptionId $script:subscription -Custom | Where-Object -FilterScript { $_.Properties.displayName -eq $script:definitionDisplayName }
                         if ($null -eq $script:definition) {
                             Write-Error -Message "Unable to locate definition"
                         }
@@ -125,27 +97,37 @@ function Publish-Assignment {
             }
         }
 
+        # Apply assignment
         switch ($type) {
             "Policy" {
                 Write-Verbose -Message "- Retrieve assignment"
                 $script:assignment = Get-AzPolicyAssignment -Scope $script:scope | Where-Object -FilterScript { $_.Name -eq $script:assignmentName }
+                $script:definitionId = ($script:definition.properties.policyRule.then.details.roleDefinitionIds -split "/")[4]
+                $script:objectId = ($script:assignment.Identity.principalId)
+
+                # Remove assignments
                 if ($null -ne $script:assignment) {
                     Write-Verbose -Message "- Remove assignment"
                     Remove-AzPolicyAssignment -Name $script:assignment.Name -Scope $script:scope
+
+                    Write-Verbose -Message "- Remove assignment"
+                    Remove-AzRoleAssignment -ObjectId "" -Scope $script:scope -RoleDefinitionId $script:definitionId
                 }
                 
+                # New assignment
                 Write-Verbose -Message "- Create assignment"
                 New-AzPolicyAssignment @params -WarningAction SilentlyContinue
 
+                # Get assignment
                 Write-Verbose -Message "- Retrieve assignment"
                 $script:assignment = Get-AzPolicyAssignment -Scope $script:scope | Where-Object -FilterScript { $_.Name -eq $script:assignmentName }
-
                 $script:definitionId = ($script:definition.properties.policyRule.then.details.roleDefinitionIds -split "/")[4]
                 $script:objectId = ($script:assignment.Identity.principalId)
 
                 Write-Verbose -Message "- Start sleep"
                 Start-Sleep -Seconds 15
 
+                # New assignment
                 Write-Verbose -Message "- Create assignment"
                 New-AzRoleAssignment -Scope $script:scope -ObjectId $script:objectId -RoleDefinitionId $script:definitionId
             }
