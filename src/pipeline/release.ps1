@@ -4,15 +4,15 @@ function Publish-Assignment {
 
     [CmdletBinding()]
     param (
+        [Parameter(Mandatory = $true)]
+        [ValidateSet("Policy")]
+        [string]$Type,
+
         [Parameter(Mandatory = $true, ParameterSetName = 'ManagementGroup')]
         [String]$ManagementGroup,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Subscription')]
         [String]$Subscription,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateSet("Initiative", "Policy")]
-        [string]$Type,
 
         [Parameter(Mandatory = $false)]
         [string]$Name
@@ -71,13 +71,13 @@ function Publish-Assignment {
                     "ManagementGroup" {
                         $script:definition = Get-AzPolicyDefinition -ManagementGroupName $script:managementGroupId -Custom | Where-Object -FilterScript { $_.Properties.displayName -eq $script:definitionDisplayName }
                         if ($null -eq $script:definition) {
-                            Write-Error -Message "Unable to locate definition"
+                            Write-Error -Message "Unable to locate definition" -ErrorAction Stop
                         }
                     }
                     "Subscription" {
                         $script:definition = Get-AzPolicyDefinition -SubscriptionId $script:subscriptionId -Custom | Where-Object -FilterScript { $_.Properties.displayName -eq $script:definitionDisplayName }
                         if ($null -eq $script:definition) {
-                            Write-Error -Message "Unable to locate definition"
+                            Write-Error -Message "Unable to locate definition" -ErrorAction Stop
                         }
                     }
                 }
@@ -102,13 +102,14 @@ function Publish-Assignment {
             "Policy" {
                 Write-Verbose -Message "- Retrieve assignment"
                 $script:assignment = Get-AzPolicyAssignment -Scope $script:scope | Where-Object -FilterScript { $_.Name -eq $script:assignmentName }
-                $script:definitionId = ($script:definition.properties.policyRule.then.details.roleDefinitionIds -split "/")[4]
-                $script:objectId = ($script:assignment.Identity.principalId)
 
                 # Remove assignments
                 if ($null -ne $script:assignment) {
                     Write-Verbose -Message "- Remove assignment"
                     Remove-AzPolicyAssignment -Name $script:assignment.Name -Scope $script:scope
+
+                    $script:definitionId = ($script:definition.properties.policyRule.then.details.roleDefinitionIds -split "/")[4]
+                    $script:objectId = ($script:assignment.Identity.principalId)
 
                     Write-Verbose -Message "- Remove assignment"
                     Remove-AzRoleAssignment -ObjectId "" -Scope $script:scope -RoleDefinitionId $script:definitionId

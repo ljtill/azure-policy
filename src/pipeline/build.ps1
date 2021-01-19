@@ -4,15 +4,15 @@ function Publish-Definition {
 
     [CmdletBinding()]
     param (
+        [Parameter(Mandatory = $true)]
+        [ValidateSet("Policy")]
+        [string]$Type,
+
         [Parameter(Mandatory = $true, ParameterSetName = 'ManagementGroup')]
         [String]$ManagementGroup,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Subscription')]
         [String]$Subscription,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateSet("Policy")]
-        [string]$Type,
 
         [Parameter(Mandatory = $false)]
         [string]$Name
@@ -69,19 +69,20 @@ function Publish-Definition {
                 switch ($PSCmdlet.ParameterSetName) {
                     "ManagementGroup" {
                         $params = @{
-                            Name            = $script:definitionName
-                            DisplayName     = $script:definitionDisplayName
-                            ManagementGroup = ($script:scope -split "/" | Select-Object -Index 4)
-                            Policy          = $script:definitionPath
-                            Parameter       = $script:definitionParametersPath
+                            Name                = $script:definitionName
+                            DisplayName         = $script:definitionDisplayName
+                            Policy              = $script:definitionPath
+                            Parameter           = $script:definitionParametersPath
+                            ManagementGroupName = $script:managementGroupId
                         }
                     }
                     "Subscription" {
                         $params = @{
-                            Name        = $script:definitionName
-                            DisplayName = $script:definitionDisplayName
-                            Policy      = $script:definitionPath
-                            Parameter   = $script:definitionParametersPath
+                            Name           = $script:definitionName
+                            DisplayName    = $script:definitionDisplayName
+                            Policy         = $script:definitionPath
+                            Parameter      = $script:definitionParametersPath
+                            SubscriptionId = $script:subscriptionId
                         }
                     }
                 }
