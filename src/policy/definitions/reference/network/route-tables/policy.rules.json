@@ -11,18 +11,32 @@
     "effect": "deployIfNotExists",
     "details": {
       "type": "Microsoft.Network/routeTables",
+      "deploymentScope": "resourceGroup",
+      "existenceScope": "subscription",
+      "existenceCondition": {
+        "allOf": [
+          {
+            "field": "name",
+            "like": "[parameters('routeTableName')]"
+          },
+          {
+            "field": "location",
+            "equals": "[parameters('routeTableLocation')]"
+          }
+        ]
+      },
       "roleDefinitionIds": [
-        "/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
+        "/providers/microsoft.authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
       ],
       "deployment": {
         "properties": {
           "mode": "Incremental",
           "parameters": {
             "name": {
-              "value": "[field('name')]"
+              "value": "[parameters('routeTableName')]"
             },
             "location": {
-              "value": "[field('location')]"
+              "value": "[parameters('routeTableLocation')]"
             }
           },
           "template": {

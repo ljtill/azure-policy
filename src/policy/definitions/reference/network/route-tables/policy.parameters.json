@@ -1,2 +1,8 @@
 {
+  "routeTableName": {
+    "type": "string"
+  },
+  "routeTableLocation": {
+    "type": "string"
+  }
 }
