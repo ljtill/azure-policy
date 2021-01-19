@@ -96,8 +96,6 @@ function Publish-Definition {
         # Generate params
         Write-Verbose -Message "- Generate params"
         switch ($type) {
-            "Initiative" {
-            }
             "Policy" {
                 switch ($PSCmdlet.ParameterSetName) {
                     "ManagementGroup" {
@@ -122,8 +120,6 @@ function Publish-Definition {
         }
 
         switch ($type) {
-            "Initiative" {
-            }
             "Policy" {
                 Write-Verbose -Message "- Retrieve assignment"
                 $script:assignment = Get-AzPolicyAssignment -Scope $script:scope | Where-Object -FilterScript { $_.Name -eq $script:assignmentName }
@@ -141,21 +137,24 @@ function Publish-Definition {
                         $script:definition = Get-AzPolicyDefinition  -SubscriptionId $subscription -Custom | Where-Object -FilterScript { $_.Properties.displayName -eq $script:definitionDisplayName }
                     }
                 }
-                
+
                 if ($null -eq $script:definition) {
                     Write-Verbose -Message "- Create definition"
                     New-AzPolicyDefinition @params
                 }
                 else {
-                    Write-Verbose -Message "- Update definition"
+                    Write-Verbose -Message "- Remove definition"
                     switch ($PSCmdlet.ParameterSetName) {
                         "ManagementGroup" {
-                            Set-AzPolicyDefinition -Name $script:definitionName -ManagementGroupName $managementGroup -Policy $script:definitionPath -Parameter $script:definitionParametersPath
+                            Remove-AzPolicyDefinition -Name $script:definitionName -ManagementGroupName $managementGroup -Force
                         }
                         "Subscription" {
-                            Set-AzPolicyDefinition -Name $script:definitionName -Policy $script:definitionPath -Parameter $script:parameterPath
+                            Remove-AzPolicyDefinition -Name $script:definitionName -SubscriptionId $subscription -Force
                         }
                     }
+
+                    Write-Verbose -Message "- Create definition"
+                    New-AzPolicyDefinition @params
                 }
             }
         }

@@ -97,8 +97,6 @@ function Publish-Assignment {
         # Generate params
         Write-Verbose -Message "- Generate params"
         switch ($type) {
-            "Initiative" {
-            }
             "Policy" {
                 Write-Verbose -Message "- Retrieve definition"
                 switch ($PSCmdlet.ParameterSetName) {
@@ -132,8 +130,6 @@ function Publish-Assignment {
         }
 
         switch ($type) {
-            "Initiative" {
-            }
             "Policy" {
                 Write-Verbose -Message "- Retrieve assignment"
                 $script:assignment = Get-AzPolicyAssignment -Scope $script:scope | Where-Object -FilterScript { $_.Name -eq $script:assignmentName }
@@ -144,6 +140,18 @@ function Publish-Assignment {
                 
                 Write-Verbose -Message "- Create assignment"
                 New-AzPolicyAssignment @params -WarningAction SilentlyContinue
+
+                Write-Verbose -Message "- Retrieve assignment"
+                $script:assignment = Get-AzPolicyAssignment -Scope $script:scope | Where-Object -FilterScript { $_.Name -eq $script:assignmentName }
+
+                $script:definitionId = ($script:definition.properties.policyRule.then.details.roleDefinitionIds -split "/")[4]
+                $script:objectId = ($script:assignment.Identity.principalId)
+
+                Write-Verbose -Message "- Start sleep"
+                Start-Sleep -Seconds 15
+
+                Write-Verbose -Message "- Create assignment"
+                New-AzRoleAssignment -Scope $script:scope -ObjectId $script:objectId -RoleDefinitionId $script:definitionId
             }
         }
     }
