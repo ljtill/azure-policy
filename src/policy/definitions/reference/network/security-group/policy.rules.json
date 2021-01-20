@@ -11,18 +11,32 @@
     "effect": "deployIfNotExists",
     "details": {
       "type": "Microsoft.Network/networkSecurityGroups",
+      "deploymentScope": "resourceGroup",
+      "existenceScope": "subscription",
+      "existenceCondition": {
+        "allOf": [
+          {
+            "field": "name",
+            "like": "[parameters('securityGroupName')]"
+          },
+          {
+            "field": "location",
+            "equals": "[parameters('securityGroupLocation')]"
+          }
+        ]
+      },
       "roleDefinitionIds": [
-        "/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
+        "/providers/microsoft.authorization/roleDefinitions/4d97b98b-1d4f-4787-a291-c67834d212e7"
       ],
       "deployment": {
         "properties": {
           "mode": "Incremental",
           "parameters": {
             "name": {
-              "value": "[field('name')]"
+              "value": "[parameters('securityGroupName')]"
             },
             "location": {
-              "value": "[field('location')]"
+              "value": "[parameters('securityGroupLocation')]"
             }
           },
           "template": {
@@ -37,7 +51,17 @@
               }
             },
             "variables": {},
-            "resources": [],
+            "resources": [
+              {
+                "name": "[parameters('name')]",
+                "type": "Microsoft.Network/networkSecurityGroups",
+                "apiVersion": "2019-11-01",
+                "location": "[parameters('location')]",
+                "properties": {
+                  "securityRules": []
+                }
+              }
+            ],
             "outputs": {}
           }
         }
