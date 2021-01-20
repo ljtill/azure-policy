@@ -1,88 +1,85 @@
 {
-    "if": {
+  "if": {
+    "allOf": [
+      {
         "field": "type",
         "equals": "Microsoft.Network/networkSecurityGroups"
-    },
-    "then": {
-        "effect": "deployIfNotExists",
-        "details": {
-            "type": "Microsoft.Network/networkWatchers/flowLogs",
-            "roleDefinitionIds": [
-                "/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
-            ],
-            "name": "[concat('NetworkWatcher_', field('location'), '/', 'Microsoft.Network', resourceGroup().name, field('name'))]",
-            "resourceGroupName": "NetworkWatcherRG",
-            "existenceCondition": {
-                "field": "Microsoft.Network/networkWatchers/flowLogs/enabled",
-                "equals": "true"
+      }
+    ]
+  },
+  "then": {
+    "effect": "deployIfNotExists",
+    "details": {
+      "type": "Microsoft.Network/networkWatchers/flowLogs",
+      "deploymentScope": "resourceGroup",
+      "existenceScope": "subscription",
+      "existenceCondition": {
+        "field": "Microsoft.Network/networkWatchers/flowLogs/enabled",
+        "equals": "true"
+      },
+      "roleDefinitionIds": [
+        "/providers/microsoft.authorization/roleDefinitions/4d97b98b-1d4f-4787-a291-c67834d212e7"
+      ],
+      "deployment": {
+        "properties": {
+          "mode": "Incremental",
+          "parameters": {
+            "flowLogsLocation": {
+              "value": "[parameters('flowLogsLocation')]"
             },
-            "deployment": {
-                "properties": {
-                    "mode": "incremental",
-                    "parameters": {
-                        "networkSecurityGroupName": {
-                            "value": "[field('name')]"
-                        },
-                        "resourceGroupName": {
-                            "value": "[resourceGroup().name]"
-                        },
-                        "location": {
-                            "value": "[field('location')]"
-                        },
-                        "storageAccountResourceId": {
-                            "value": "[parameters('storageAccountResourceId')]"
-                        },
-                        "retention": {
-                            "value": "[parameters('retention')]"
-                        }
-                    },
-                    "template": {
-                        "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-                        "contentVersion": "1.0.0.0",
-                        "parameters": {
-                            "networkSecurityGroupName": {
-                                "type": "string"
-                            },
-                            "resourceGroupName": {
-                                "type": "string"
-                            },
-                            "location": {
-                                "type": "string"
-                            },
-                            "storageAccountResourceId": {
-                                "type": "string"
-                            },
-                            "retention": {
-                                "type": "int",
-                                "defaultValue": 5
-                            }
-                        },
-                        "variables": {},
-                        "resources": [
-                            {
-                                "type": "Microsoft.Network/networkWatchers/flowLogs",
-                                "apiVersion": "2019-11-01",
-                                "name": "[concat('NetworkWatcher_', toLower(parameters('location')),  '/', 'flowLogs')]",
-                                "location": "[parameters('location')]",
-                                "properties": {
-                                    "targetResourceId": "[resourceId(parameters('resourceGroupName'), 'Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]",
-                                    "storageId": "[parameters('storageAccountResourceId')]",
-                                    "enabled": true,
-                                    "retentionPolicy": {
-                                        "enabled": true,
-                                        "days": "[parameters('retention')]"
-                                    },
-                                    "format": {
-                                        "type": "JSON",
-                                        "version": 2
-                                    }
-                                }
-                            }
-                        ],
-                        "outputs": {}
-                    }
-                }
+            "flowLogsRetention": {
+              "value": "[parameters('flowLogsRetention')]"
+            },
+            "networkSecurityGroupName": {
+              "value": "[field('name')]"
+            },
+            "storageAccountName": {
+              "value": "[parameters('storageAccountName')]"
             }
+          },
+          "template": {
+            "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
+              "flowLogsLocation": {
+                "type": "string"
+              },
+              "flowLogsRetention": {
+                "type": "string"
+              },
+              "networkSecurityGroupName": {
+                "type": "string"
+              },
+              "storageAccountName": {
+                "type": "string"
+              }
+            },
+            "variables": {},
+            "resources": [
+              {
+                "type": "Microsoft.Network/networkWatchers/flowLogs",
+                "apiVersion": "2019-11-01",
+                "name": "[concat('NetworkWatcher_', toLower(parameters('flowLogsLocation')),  '/', 'flowLogs')]",
+                "location": "[parameters('flowLogsLocation')]",
+                "properties": {
+                  "enabled": true,
+                  "format": {
+                    "type": "JSON",
+                    "version": 2
+                  },
+                  "retentionPolicy": {
+                    "days": "[parameters('flowLogsRetention')]",
+                    "enabled": true
+                  },
+                  "storageId": "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Storage/storageAcccounts', parameters('storageAccountName'))]",
+                  "targetResourceId": "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
+                }
+              }
+            ],
+            "outputs": {}
+          }
         }
+      }
     }
+  }
 }

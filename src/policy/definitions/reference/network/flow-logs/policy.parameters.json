@@ -1,1 +1,11 @@
-{}
+{
+  "flowLogsLocation": {
+    "type": "string"
+  },
+  "flowLogsRetention": {
+    "type": "string"
+  },
+  "storageAccountName": {
+    "type": "string"
+  }
+}
