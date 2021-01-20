@@ -42,8 +42,8 @@
     "parameterPath": "./src/policy/definitions/reference/network/route-tables/policy.parameters.json"
   },
   {
-    "displayName": "Deploy Route Table",
-    "assignmentName": "DeployRouteTable",
+    "displayName": "Deploy Flow Logs",
+    "assignmentName": "DeployFlowLogs",
     "name": "153f8f08-6d27-47d5-9320-3819020c80a2",
     "description": "",
     "effect": "deployIfNotExists",
