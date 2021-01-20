@@ -4,24 +4,24 @@
     "assignmentName": "AuditVirtualMachines",
     "name": "d4685ace-7f09-40c7-9144-55c2644d059b",
     "description": "Provides the ability to audit Virtual Machines for single instances.",
-    "definitionPath": "./src/policy/definitions/agreements/single-instance/virtual-machines/policy.rules.json",
-    "parameterPath": "./src/policy/definitions/agreements/single-instance/virtual-machines/policy.parameters.json"
+    "definitionPath": "./src/policy/definitions/reference/compute/virtual-machines/policy.rules.json",
+    "parameterPath": "./src/policy/definitions/reference/compute/virtual-machines/policy.parameters.json"
   },
   {
     "displayName": "Audit for Single Instance - Virtual Machine Scale Sets",
     "assignmentName": "AuditVMScaleSets",
     "name": "d45b4aa2-aea3-4a12-923b-bc684f3a5f40",
     "description": "Provides the ability to audit Virtual Machine Scale Sets for single instances.",
-    "definitionPath": "./src/policy/definitions/agreements/single-instance/scale-sets/policy.rules.json",
-    "parameterPath": "./src/policy/definitions/agreements/single-instance/scale-sets/policy.parameters.json"
+    "definitionPath": "./src/policy/definitions/reference/compute/scale-sets/policy.rules.json",
+    "parameterPath": "./src/policy/definitions/reference/compute/scale-sets/policy.parameters.json"
   },
   {
     "displayName": "Audit for Single Instance - Availability Sets",
     "assignmentName": "AuditAvailabilitySets",
     "name": "eab2b702-b698-4e94-b349-1712675efccb",
     "description": "Provides the ability to audit Availability Sets for single instances.",
-    "definitionPath": "./src/policy/definitions/agreements/single-instance/availability-sets/policy.rules.json",
-    "parameterPath": "./src/policy/definitions/agreements/single-instance/availability-sets/policy.parameters.json"
+    "definitionPath": "./src/policy/definitions/reference/compute/availability/sets-v2/policy.rules.json",
+    "parameterPath": "./src/policy/definitions/reference/compute/availability/sets-v2/policy.parameters.json"
   },
   {
     "displayName": "Deploy Security Group",
@@ -40,5 +40,14 @@
     "effect": "deployIfNotExists",
     "definitionPath": "./src/policy/definitions/reference/network/route-tables/policy.rules.json",
     "parameterPath": "./src/policy/definitions/reference/network/route-tables/policy.parameters.json"
+  },
+  {
+    "displayName": "Deploy Route Table",
+    "assignmentName": "DeployRouteTable",
+    "name": "153f8f08-6d27-47d5-9320-3819020c80a2",
+    "description": "",
+    "effect": "deployIfNotExists",
+    "definitionPath": "./src/policy/definitions/reference/network/flow-logs/policy.rules.json",
+    "parameterPath": "./src/policy/definitions/reference/network/flow-logs/policy.parameters.json"
   }
 ]
