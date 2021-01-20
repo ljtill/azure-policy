@@ -1,2 +1,8 @@
 {
+  "securityGroupName": {
+    "type": "string"
+  },
+  "securityGroupLocation": {
+    "type": "string"
+  }
 }
