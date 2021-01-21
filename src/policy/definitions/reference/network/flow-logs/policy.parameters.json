@@ -1,11 +1,17 @@
 {
-  "flowLogsLocation": {
-    "type": "string"
+  "location": {
+    "type": "String"
   },
-  "flowLogsRetention": {
-    "type": "string"
+  "retention": {
+    "type": "Integer"
   },
-  "storageAccountName": {
-    "type": "string"
+  "interval": {
+    "type": "Integer"
+  },
+  "storageAccountId": {
+    "type": "String"
+  },
+  "workspaceId": {
+    "type": "String"
   }
 }

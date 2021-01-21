@@ -1,14 +1,5 @@
 {
-    "properties": {
-        "displayName": "",
-        "description": "",
-        "parameters": {},
-        "policyRule": {
-            "if": {
-            },
-            "then": {
-                "effect": "audit"
-            }
-        }
-    }
+  "mode": "All",
+  "policyRule": {},
+  "parameters": {}
 }

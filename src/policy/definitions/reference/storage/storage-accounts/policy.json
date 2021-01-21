@@ -1,17 +1,5 @@
 {
-    "properties": {
-        "displayName": "",
-        "description": "",
-        "parameters": {
-            "": {
-                "type": "",
-                "metadata": {
-                    "description": "",
-                    "displayName": ""
-                }
-            }
-        },
-        "policyRule": {
-        }
-    }
+  "mode": "All",
+  "policyRule": {},
+  "parameters": {}
 }

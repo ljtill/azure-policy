@@ -24,33 +24,47 @@
         "properties": {
           "mode": "Incremental",
           "parameters": {
-            "flowLogsLocation": {
-              "value": "[parameters('flowLogsLocation')]"
+            "location": {
+              "value": "[parameters('location')]"
             },
-            "flowLogsRetention": {
-              "value": "[parameters('flowLogsRetention')]"
+            "retention": {
+              "value": "[parameters('retention')]"
             },
-            "networkSecurityGroupName": {
-              "value": "[field('name')]"
+            "interval": {
+              "value": "[parameters('interval')]"
             },
-            "storageAccountName": {
-              "value": "[parameters('storageAccountName')]"
+            "securityGroupId": {
+              "value": "[field('id')]"
+            },
+            "storageAccountId": {
+              "value": "[parameters('storageAccountId')]"
+            },
+            "workspaceId": {
+              "value": "[parameters('workspaceId')]"
             }
           },
           "template": {
             "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
             "contentVersion": "1.0.0.0",
             "parameters": {
-              "flowLogsLocation": {
+              "location": {
                 "type": "string"
               },
-              "flowLogsRetention": {
+              "retention": {
+                "type": "int",
+                "defaultValue": 5
+              },
+              "interval": {
+                "type": "int",
+                "defaultValue": 60
+              },
+              "securityGroupId": {
                 "type": "string"
               },
-              "networkSecurityGroupName": {
+              "storageAccount": {
                 "type": "string"
               },
-              "storageAccountName": {
+              "workspaceId": {
                 "type": "string"
               }
             },
@@ -59,8 +73,8 @@
               {
                 "type": "Microsoft.Network/networkWatchers/flowLogs",
                 "apiVersion": "2019-11-01",
-                "name": "[concat('NetworkWatcher_', toLower(parameters('flowLogsLocation')),  '/', 'flowLogs')]",
-                "location": "[parameters('flowLogsLocation')]",
+                "name": "[concat('NetworkWatcher_', toLower(parameters('location')),  '/', 'flowLogs')]",
+                "location": "[parameters('location')]",
                 "properties": {
                   "enabled": true,
                   "format": {
@@ -68,11 +82,18 @@
                     "version": 2
                   },
                   "retentionPolicy": {
-                    "days": "[parameters('flowLogsRetention')]",
+                    "days": "[parameters('retention')]",
                     "enabled": true
                   },
-                  "storageId": "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Storage/storageAcccounts', parameters('storageAccountName'))]",
-                  "targetResourceId": "[resourceId(subscription().subscriptionId, resourceGroup().name, 'Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
+                  "flowAnalyticsConfiguration": {
+                    "networkWatcherFlowAnalyticsConfiguration": {
+                      "enabled": true,
+                      "trafficAnalyticsInterval": "[parameters('interval')]",
+                      "workspaceResourceId": "[parameters('workspaceId')]"
+                    }
+                  },
+                  "storageId": "[parameters('storageAccountId')]",
+                  "targetResourceId": "[parameters('securityGroupId')]"
                 }
               }
             ],
