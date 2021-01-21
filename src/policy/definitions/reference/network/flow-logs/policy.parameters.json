@@ -1,7 +1,4 @@
 {
-  "location": {
-    "type": "String"
-  },
   "retention": {
     "type": "Integer"
   },

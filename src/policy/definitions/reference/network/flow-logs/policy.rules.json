@@ -25,7 +25,7 @@
           "mode": "Incremental",
           "parameters": {
             "location": {
-              "value": "[parameters('location')]"
+              "value": "[field('location')]"
             },
             "retention": {
               "value": "[parameters('retention')]"
@@ -71,6 +71,12 @@
             "variables": {},
             "resources": [
               {
+                "type": "Microsoft.Network/networkWatchers",
+                "apiVersion": "2020-07-01",
+                "name": "[concat('NetworkWatcher_', toLower(parameters('location')))]",
+                "location": "[parameters('location')]"
+              },
+              {
                 "type": "Microsoft.Network/networkWatchers/flowLogs",
                 "apiVersion": "2019-11-01",
                 "name": "[concat('NetworkWatcher_', toLower(parameters('location')),  '/', 'flowLogs')]",
@@ -94,7 +100,10 @@
                   },
                   "storageId": "[parameters('storageAccountId')]",
                   "targetResourceId": "[parameters('securityGroupId')]"
-                }
+                },
+                "dependsOn": [
+                  "[concat('NetworkWatcher_', toLower(parameters('location')))]"
+                ]
               }
             ],
             "outputs": {}
