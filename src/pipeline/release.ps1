@@ -32,32 +32,22 @@ function Publish-Assignment {
         # Parse metadata
         Write-Verbose -Message "- Parse metadata"
         $script:metadata = $script:metadata | Where-Object -FilterScript { $_.assignmentName -eq $Name }
-        $script:definitionName = $script:metadata | Select-Object -ExpandProperty name
         $script:definitionDisplayName = $script:metadata | Select-Object -ExpandProperty displayName
-        $script:definitionPath = $script:metadata | Select-Object -ExpandProperty definitionPath
-        $script:definitionParametersPath = $script:metadata | Select-Object -ExpandProperty parameterPath
         $script:assignmentName = $script:metadata | Select-Object -ExpandProperty assignmentName
-
-        switch ($PSCmdlet.ParameterSetName) {
-            "ManagementGroup" {
-                # Get management group
-                Write-Verbose -Message "- Retrieve management group"
-                $script:managementGroupId = Get-AzManagementGroup | Where-Object -FilterScript { $_.DisplayName -eq $ManagementGroup } | Select-Object -ExpandProperty Id
-            }
-            "Subscription" {
-                # Get subscription
-                Write-Verbose -Message "- Retrieve subscription"
-                $script:subscriptionId = (Get-AzSubscription -SubscriptionName $subscription).Id
-            }
-        }
+        $script:assignmentInputsPath = $script:metadata | Select-Object -ExpandProperty inputPath
 
         # Generate scope
         Write-Verbose -Message "- Generate scope"
         switch ($PSCmdlet.ParameterSetName) {
             "ManagementGroup" {
+                Write-Verbose -Message "- Retrieve management group"
+                $script:managementGroupId = Get-AzManagementGroup | Where-Object -FilterScript { $_.DisplayName -eq $ManagementGroup } | Select-Object -ExpandProperty Id
                 $script:scope = ("/providers/Microsoft.Management/managementGroups/" + $script:managementGroupId)
             }
             "Subscription" {
+                # Get subscription
+                Write-Verbose -Message "- Retrieve subscription"
+                $script:subscriptionId = (Get-AzSubscription -SubscriptionName $subscription).Id
                 $script:scope = ("/subscriptions/" + $script:subscriptionId)
             }
         }
@@ -88,6 +78,7 @@ function Publish-Assignment {
                             Name             = $script:assignmentName
                             DisplayName      = $script:definitionDisplayName
                             PolicyDefinition = $script:definition
+                            PolicyParameter  = $script:assignmentInputsPath
                             Scope            = $script:scope
                             AssignIdentity   = $true
                             Location         = 'uksouth'

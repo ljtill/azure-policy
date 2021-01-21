@@ -48,6 +48,7 @@
     "description": "",
     "effect": "deployIfNotExists",
     "definitionPath": "./src/policy/definitions/reference/network/flow-logs/policy.rules.json",
-    "parameterPath": "./src/policy/definitions/reference/network/flow-logs/policy.parameters.json"
+    "parameterPath": "./src/policy/definitions/reference/network/flow-logs/policy.parameters.json",
+    "inputPath": "./src/policy/definitions/reference/network/flow-logs/policy.inputs.json"
   }
 ]
