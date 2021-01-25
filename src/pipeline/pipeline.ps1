@@ -9,9 +9,11 @@ function Publish-Definition {
         [string]$Type,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ManagementGroup')]
+        [ValidateSet([ManagementGroups])]
         [String]$ManagementGroup,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Subscription')]
+        [ValidateSet([Subscriptions])]
         [String]$Subscription,
 
         [Parameter(Mandatory = $false)]
@@ -271,6 +273,19 @@ function Publish-Assignment {
 
 }
 
+# ValidateSets
+class ManagementGroups : System.Management.Automation.IValidateSetValuesGenerator {
+    [String[]] GetValidValues() {
+        $managementGroups = (Get-AzManagementGroup).DisplayName
+        return $managementGroups
+    }
+}
+class Subscriptions : System.Management.Automation.IValidateSetValuesGenerator {
+    [String[]] GetValidValues() {
+        $subscriptions = (Get-AzSubscription).Name | Sort-Object
+        return $subscriptions
+    }
+}
 class Names : System.Management.Automation.IValidateSetValuesGenerator {
     [String[]] GetValidValues() {
         $names = (Get-Content -Path "./src/pipeline/metadata.json" | ConvertFrom-Json).assignmentName
