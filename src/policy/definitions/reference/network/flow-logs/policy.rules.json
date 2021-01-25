@@ -11,9 +11,7 @@
     "effect": "deployIfNotExists",
     "details": {
       "type": "Microsoft.Network/networkWatchers/flowlogs",
-      "deploymentScope": "resourceGroup",
-      "resourceGroupName": "[if(empty(coalesce(field('Microsoft.Network/networkSecurityGroups/flowLogs'))), 'networkWatcherRG', split(first(field('Microsoft.Network/networkSecurityGroups/flowLogs[*].id')), '/')[4])]",
-      "existenceScope": "subscription",
+      "name": "[if(empty(coalesce(field('Microsoft.Network/networkSecurityGroups/flowLogs[*].id'))), 'null/null', concat(split(first(field('Microsoft.Network/networkSecurityGroups/flowLogs[*].id')), '/')[8], '/', split(first(field('Microsoft.Network/networkSecurityGroups/flowLogs[*].id')), '/')[10]))]",
       "existenceCondition": {
         "allOf": [
           {
@@ -25,6 +23,8 @@
       "roleDefinitionIds": [
         "/providers/microsoft.authorization/roleDefinitions/4d97b98b-1d4f-4787-a291-c67834d212e7"
       ],
+      "deploymentScope": "resourceGroup",
+      "resourceGroupName": "[if(empty(coalesce(field('Microsoft.Network/networkSecurityGroups/flowLogs'))), 'networkWatcherRG', split(first(field('Microsoft.Network/networkSecurityGroups/flowLogs[*].id')), '/')[4])]",
       "deployment": {
         "properties": {
           "mode": "Incremental",
