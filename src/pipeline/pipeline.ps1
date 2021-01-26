@@ -1,5 +1,8 @@
 #Requires -Modules Az.Accounts, Az.PolicyInsights, Az.Resources
 
+#
+# Functions
+#
 function Publish-Definition {
 
     [CmdletBinding()]
@@ -265,6 +268,9 @@ function Publish-Assignment {
                 New-AzRoleAssignment -Scope $script:scope -ObjectId $script:objectId -RoleDefinitionId $script:definitionId
             }
         }
+
+        # Start scan
+        Start-AzPolicyComplianceScan -AsJob
     }
 
     end {
@@ -273,7 +279,9 @@ function Publish-Assignment {
 
 }
 
-# ValidateSets
+#
+# Classes
+#
 class ManagementGroups : System.Management.Automation.IValidateSetValuesGenerator {
     [String[]] GetValidValues() {
         $managementGroups = (Get-AzManagementGroup).DisplayName
