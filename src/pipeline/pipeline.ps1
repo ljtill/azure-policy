@@ -249,7 +249,7 @@ function Publish-Assignment {
                     Write-Verbose -Message "- Remove assignment"
                     Remove-AzRoleAssignment -ObjectId "" -Scope $script:scope -RoleDefinitionId $script:definitionId
                 }
-                
+
                 # New assignment
                 Write-Verbose -Message "- Create assignment"
                 New-AzPolicyAssignment @params -WarningAction SilentlyContinue
@@ -257,7 +257,7 @@ function Publish-Assignment {
                 # Get assignment
                 Write-Verbose -Message "- Retrieve assignment"
                 $script:assignment = Get-AzPolicyAssignment -Scope $script:scope | Where-Object -FilterScript { $_.Name -eq $script:assignmentName }
-                $script:definitionId = ($script:definition.properties.policyRule.then.details.roleDefinitionIds -split "/")[4]
+                $script:definitionIds = ($script:definition.properties.policyRule.then.details.roleDefinitionIds)
                 $script:objectId = ($script:assignment.Identity.principalId)
 
                 Write-Verbose -Message "- Start sleep"
@@ -265,12 +265,15 @@ function Publish-Assignment {
 
                 # New assignment
                 Write-Verbose -Message "- Create assignment"
-                New-AzRoleAssignment -Scope $script:scope -ObjectId $script:objectId -RoleDefinitionId $script:definitionId
+                $script:definitionIds | ForEach-Object {
+                    $script:definitionId = ($_ -split "/")[4]
+                    New-AzRoleAssignment -Scope $script:scope -ObjectId $script:objectId -RoleDefinitionId $script:definitionId
+                }
             }
         }
 
         # Start scan
-        Start-AzPolicyComplianceScan -AsJob
+        Start-AzPolicyComplianceScan -AsJob | Select-Object -ExpandProperty Id
     }
 
     end {
