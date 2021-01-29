@@ -1,14 +1,11 @@
 {
+  "workspace": {
+    "type": "String"
+  },
   "retention": {
     "type": "Integer"
   },
   "interval": {
     "type": "Integer"
-  },
-  "storageAccountId": {
-    "type": "String"
-  },
-  "workspaceId": {
-    "type": "String"
   }
 }
