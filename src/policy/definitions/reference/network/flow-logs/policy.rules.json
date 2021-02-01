@@ -76,13 +76,14 @@
             },
             "variables": {
               "resourceGroupName": "[split(parameters('networkSecurityGroup'), '/')[4]]",
+              "securityGroupName": "[split(parameters('networkSecurityGroup'), '/')[8]]",
               "storageAccountName": "[concat('es', uniqueString(parameters('time')))]"
             },
             "resources": [
               {
                 "type": "Microsoft.Resources/deployments",
                 "apiVersion": "2019-10-01",
-                "name": "[concat(variables('resourceGroupName'))]",
+                "name": "[concat(variables('resourceGroupName'), '.', variables('securityGroupName'))]",
                 "resourceGroup": "[variables('resourceGroupName')]",
                 "properties": {
                   "mode": "Incremental",
