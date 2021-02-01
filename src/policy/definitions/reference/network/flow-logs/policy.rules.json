@@ -77,7 +77,7 @@
             "variables": {
               "resourceGroupName": "[split(parameters('networkSecurityGroup'), '/')[4]]",
               "securityGroupName": "[split(parameters('networkSecurityGroup'), '/')[8]]",
-              "storageAccountName": "[concat('es', uniqueString(parameters('time')))]"
+              "storageAccountName": "[concat('es', uniqueString(variables('securityGroupName'), parameters('time')))]"
             },
             "resources": [
               {
@@ -110,7 +110,7 @@
               {
                 "type": "Microsoft.Resources/deployments",
                 "apiVersion": "2019-10-01",
-                "name": "[concat('NetworkWatcherRG')]",
+                "name": "[concat('NetworkWatcherRG', '.', variables('securityGroupName'))]",
                 "resourceGroup": "NetworkWatcherRG",
                 "properties": {
                   "mode": "Incremental",
@@ -128,7 +128,7 @@
                           {
                             "type": "flowLogs",
                             "apiVersion": "2019-11-01",
-                            "name": "default",
+                            "name": "[concat(variables('securityGroupName'), '-Network-flowlog')]",
                             "location": "[parameters('location')]",
                             "properties": {
                               "enabled": true,
@@ -159,7 +159,9 @@
                     ]
                   }
                 },
-                "dependsOn": ["[concat(variables('resourceGroupName'))]"]
+                "dependsOn": [
+                  "[concat(variables('resourceGroupName'), '.', variables('securityGroupName'))]"
+                ]
               }
             ],
             "outputs": {}
