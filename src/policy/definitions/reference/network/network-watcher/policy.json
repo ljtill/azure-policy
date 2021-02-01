@@ -1,17 +1,5 @@
 {
   "mode": "All",
-  "policyRule": {
-    "if": {
-      "allOf": [
-        {
-          "field": "type",
-          "equals": "Microsoft.Network/networkWatchers"
-        }
-      ]
-    },
-    "then": {
-      "effect": "deny"
-    }
-  },
+  "policyRule": {},
   "parameters": {}
 }

@@ -1,8 +1,8 @@
 {
   "rtName": {
-    "type": "String"
+    "value": "RT-01"
   },
   "rtPropagation": {
-    "type": "Boolean"
+    "value": true
   }
 }
