@@ -68,17 +68,21 @@
               },
               "interval": {
                 "type": "int"
+              },
+              "time": {
+                "type": "string",
+                "defaultValue": "[utcNow()]"
               }
             },
             "variables": {
               "resourceGroupName": "[split(parameters('networkSecurityGroup'), '/')[4]]",
-              "storageAccountName": "[concat('es', uniqueString(guid(deployment().properties.templateHash)))]"
+              "storageAccountName": "[concat('es', uniqueString(parameters('time')))]"
             },
             "resources": [
               {
                 "type": "Microsoft.Resources/deployments",
                 "apiVersion": "2019-10-01",
-                "name": "[concat(variables('resourceGroupName'), '.', deployment().properties.templateHash)",
+                "name": "[concat(variables('resourceGroupName'))]",
                 "resourceGroup": "[variables('resourceGroupName')]",
                 "properties": {
                   "mode": "Incremental",
@@ -105,7 +109,7 @@
               {
                 "type": "Microsoft.Resources/deployments",
                 "apiVersion": "2019-10-01",
-                "name": "[concat('NetworkWatcherRG', '.', deployment().properties.templateHash)",
+                "name": "[concat('NetworkWatcherRG')]",
                 "resourceGroup": "NetworkWatcherRG",
                 "properties": {
                   "mode": "Incremental",
@@ -142,7 +146,7 @@
                                   "workspaceResourceId": "[parameters('workspace')]"
                                 }
                               },
-                              "storageId": "[concat(subscription().id, '/resourceGroups/', parameters('resourceGroup'), '/providers/Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+                              "storageId": "[concat(subscription().id, '/resourceGroups/', variables('resourceGroupName'), '/providers/Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
                               "targetResourceId": "[parameters('networkSecurityGroup')]"
                             },
                             "dependsOn": [
@@ -154,9 +158,7 @@
                     ]
                   }
                 },
-                "dependsOn": [
-                  "[concat(variables('resourceGroupName'), '.', deployment().properties.templateHash)"
-                ]
+                "dependsOn": ["[concat(variables('resourceGroupName'))]"]
               }
             ],
             "outputs": {}
