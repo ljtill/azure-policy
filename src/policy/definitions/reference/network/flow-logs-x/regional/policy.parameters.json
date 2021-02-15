@@ -1,0 +1,38 @@
+{
+  "workspace": {
+    "type": "String",
+    "metadata": {
+      "displayName": "Workspace ID",
+      "description": "Primary workspace id"
+    }
+  },
+  "retention": {
+    "type": "Integer",
+    "metadata": {
+      "displayName": "Days of retention",
+      "description": "Between 1 and 10 days"
+    }
+  },
+  "interval": {
+    "type": "Integer",
+    "metadata": {
+      "displayName": "Interval of log analysis",
+      "description": "10 or 60 minutes"
+    }
+  },
+  "storageId": {
+    "type": "String",
+    "metadata": {
+      "displayName": "Regional Storage Account ID",
+      "description": "Must be located within same location as location parameter"
+    }
+  },
+  "location": {
+    "type": "String",
+    "metadata": {
+      "displayName": "Location of NSG",
+      "description": "Specify the location of the NSG",
+      "strongType": "location"
+    }
+  }
+}

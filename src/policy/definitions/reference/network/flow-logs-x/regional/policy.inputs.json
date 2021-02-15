@@ -1,0 +1,11 @@
+{
+  "workspace": {
+    "value": "/subscriptions/1e045925-5a73-42d1-ae33-b3803bfb8ea9/resourcegroups/network/providers/microsoft.operationalinsights/workspaces/2UvFV3H9"
+  },
+  "retention": {
+    "value": 1
+  },
+  "interval": {
+    "value": 60
+  }
+}
